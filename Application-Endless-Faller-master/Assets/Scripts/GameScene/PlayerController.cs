@@ -16,12 +16,13 @@ public class PlayerController : MonoBehaviour
     public Animator aniCPlayer;
     public Animator aniCCamera;
 
+
     // Assign variables.
     void Start()
     {
+        ScoreManager.currentScore = 0;
         skndMRenderer = GetComponent<SkinnedMeshRenderer>();
         aniCPlayer = GetComponent<Animator>();
-        aniCCamera = Camera.main.GetComponent<Animator>();
         rb = GetComponent<Rigidbody>();
     }
 
@@ -45,16 +46,17 @@ public class PlayerController : MonoBehaviour
         }
 
         //stretch, squash, rotate towards movement and a camera shake.
-        gameObject.transform.rotation = Quaternion.LookRotation(rb.velocity.normalized, Vector3.up);
-        skndMRenderer.SetBlendShapeWeight(0, (Mathf.Abs(rb.velocity.magnitude) / maxSpeed) * 100);
-
+        if(rb.velocity.normalized != Vector3.zero)
+        {
+            gameObject.transform.rotation = Quaternion.LookRotation(rb.velocity.normalized, Vector3.up);
+            skndMRenderer.SetBlendShapeWeight(0, (Mathf.Abs(rb.velocity.magnitude) / maxSpeed) * 100);
+        }
         //squash the player if he stopped moving along the y axis and hasn't squashed yet.
-        if (!bounced && rb.velocity.y == 0)
+        if (!bounced && rb.velocity.y >= 0)
         {
             bounced = true;
             aniCCamera.SetTrigger("shake");
             aniCPlayer.SetTrigger("squash");
-            float tempYPos = transform.position.y;
 
         }
         //as soon as the player is moving on the y axis again, he is able to squash again
@@ -76,8 +78,7 @@ public class PlayerController : MonoBehaviour
         Vector3 screenPosition = Camera.main.WorldToViewportPoint(transform.position);
         if (screenPosition.y > 1 || screenPosition.y < 0)
         {
-            //Destroy the player and load EndScene.
-            Destroy(gameObject);
+            //load EndScene.
             SceneManager.LoadScene("EndScene");
         }
     }

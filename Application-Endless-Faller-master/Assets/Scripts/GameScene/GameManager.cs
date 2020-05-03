@@ -7,8 +7,8 @@ public class GameManager : MonoBehaviour
 {
     public GameObject platformPrefab;
 
-    public float platformSpeed;
-    public float spawnPlatformPerSecond;
+    public float platformSpeed = 2;
+    public float spawnPlatformPerSecond = 0.3f;
     float ratio;
     private float timer;
 
@@ -16,10 +16,20 @@ public class GameManager : MonoBehaviour
     float randomPos;
     int platformCount;
 
-    void Awake()
+    void Start()
     {
+        ScoreManager.Load();
         //check if File exists.
-        if (!File.Exists(Application.persistentDataPath + "/GameManagerData.json"))
+        if (File.Exists(Application.persistentDataPath + "/GameManagerData.json"))
+        {
+            //Phrase the JSON file and apply the values to the GameManager.
+            GameManagerData gMD = JsonUtility.FromJson<GameManagerData>(File.ReadAllText(Application.persistentDataPath + "/GameManagerData.json"));
+            Platform.speed = gMD.platformSpeed;
+            print(gMD.platformSpeed);
+            spawnPlatformPerSecond = gMD.spawnPlatformPerSecond;
+            
+        }
+        else
         {
             //save current Values into an object.
             GameManagerData nGMD = new GameManagerData();
@@ -30,12 +40,6 @@ public class GameManager : MonoBehaviour
 
             //create a JSON file and save the the JSON string.
             File.WriteAllText(Application.persistentDataPath + "/GameManagerData.json", jsonText);
-        }else
-        {
-            //Phrase the JSON file and apply the values to the GameManager.
-            GameManagerData gMD = JsonUtility.FromJson<GameManagerData>(File.ReadAllText(Application.persistentDataPath + "/GameManagerData.json"));
-            Platform.speed = gMD.platformSpeed;
-            spawnPlatformPerSecond = gMD.spawnPlatformPerSecond;
         }
         ratio = Platform.speed / spawnPlatformPerSecond;
         timer = spawnPlatformPerSecond;
@@ -44,15 +48,12 @@ public class GameManager : MonoBehaviour
 
     void Update()
     {
-        
-        print(Platform.speed / spawnPlatformPerSecond);
         timer -= Time.deltaTime;
-        if (timer <= 1-(1/ spawnPlatformPerSecond))
+        if (timer <= 1 - (1 / spawnPlatformPerSecond))
         {
             CreatePlatform();
             spawnPlatformPerSecond += 0.01f;
             Platform.speed = spawnPlatformPerSecond * ratio;
-            print(spawnPlatformPerSecond + " <sapwnRate  speed> " + Platform.speed);
 
             timer = 1;
         }
@@ -60,7 +61,7 @@ public class GameManager : MonoBehaviour
 
     void CreatePlatform()
     {
-         
+
 
         randomPos = Random.Range(-3.5f, 3.5f);
         float distance = Mathf.Abs(lastRanPos - randomPos);
@@ -76,11 +77,12 @@ public class GameManager : MonoBehaviour
         GameObject newPlatform = Instantiate(platformPrefab, new Vector3(randomPos, -7, 0), Quaternion.identity);
         newPlatform.GetComponent<Platform>().playerT = GameObject.FindObjectOfType<PlayerController>().transform;
 
-        if (ScoreManager.highScore == platformCount+1)
+        if (ScoreManager.highScore + 1 == platformCount)
         {
+            newPlatform.GetComponent<Platform>().isNewHighscore = true;
             foreach (MeshRenderer mR in newPlatform.GetComponentsInChildren<MeshRenderer>())
             {
-                mR.material.color = Color.yellow;
+                mR.material.color = Color.white;
             }
 
         }

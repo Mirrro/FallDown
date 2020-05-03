@@ -7,15 +7,14 @@ public class Platform : MonoBehaviour
     public static float speed;
     public Transform playerT;
     bool passed;
-    void Start()
-    {
-        
-    }
+
+    public bool isNewHighscore;
+    public GameObject particleHighscore;
 
     // Update is called once per frame
     void Update()
     {
-        transform.Translate(Vector3.up * Time.deltaTime * speed);
+        this.transform.Translate(Vector3.up * Time.deltaTime * speed);
 
         //check if the platform is still on the Screen.
         Vector3 screenPosition = Camera.main.WorldToViewportPoint(transform.position);
@@ -24,10 +23,14 @@ public class Platform : MonoBehaviour
             //Destroy the platform.
             Destroy(gameObject);            
         }
-        if(!passed && playerT.position.y < transform.position.y)
+        if(!passed && playerT.position.y < transform.position.y && playerT.gameObject)
         {
             passed = true;
             ScoreManager.currentScore++;
+            if(isNewHighscore)
+            {
+                particleHighscore.SetActive(true);
+            }
         }
     }
 
